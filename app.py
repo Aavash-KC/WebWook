@@ -10,7 +10,7 @@ BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({"student_number": "200573779"})  # Your student number
+    return jsonify({"student_number": "200573779"})  
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -19,7 +19,7 @@ def webhook():
     # Extract parameters from Dialogflow request
     intent = data.get('queryResult', {}).get('intent', {}).get('displayName', '')
     parameters = data.get('queryResult', {}).get('parameters', {})
-    city = parameters.get('geo-city', 'Barrie')  # Default to "Barrie" if no city is provided
+    city = parameters.get('geo-city') 
     
     # Fulfillment text
     fulfillment_text = ""
