@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 # OpenWeatherMap API key and base URL
-API_KEY = os.getenv("OPENWEATHERMAP_API_KEY", "YOUR_API_KEY_HERE")  # Replace with your OpenWeatherMap API key
+API_KEY = os.getenv("OPENWEATHERMAP_API_KEY", "1e71fdd19387e5fff63d1659da6ab297")  
 BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 
 @app.route("/", methods=["GET"])
