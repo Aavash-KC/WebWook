@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify
-import python_weather
-import asyncio
+import requests
 from datetime import datetime
 
 app = Flask(__name__)
+
+# OpenWeatherMap API key and base URL
+API_KEY = "1e71fdd19387e5fff63d1659da6ab297"  # Replace with your OpenWeatherMap API key
+BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 
 @app.route("/", methods=["GET"])
 def home():
@@ -22,12 +25,9 @@ def webhook():
     fulfillment_text = ""
 
     if intent == "get_weather_update":
-        # Handle async call to fetch weather
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        weather_response = loop.run_until_complete(get_weather(city))
-        loop.close()
-
+        # Fetch weather information using OpenWeatherMap API
+        weather_response = get_weather(city)
+        
         if weather_response:
             fulfillment_text = weather_response
         else:
@@ -35,23 +35,29 @@ def webhook():
 
     return jsonify({"fulfillmentText": fulfillment_text})
 
-async def get_weather(city):
+def get_weather(city):
     try:
-        async with python_weather.Client() as client:
-            # Fetch weather information
-            weather = await client.get(city)
-
-            # Fetch today's weather details
-            today = datetime.now().date()
-            for forecast in weather.forecasts:
-                if forecast.date.date() == today:
-                    description = forecast.sky_text
-                    temp = forecast.temperature
-                    return (
-                        f"The weather in {city} today is {description.lower()} "
-                        f"with a current temperature of {temp}°C."
-                    )
-            return f"No specific forecast found for {city} today."
+        # Construct the request URL with city and API key
+        url = f"{BASE_URL}?q={city}&appid={API_KEY}&units=metric"
+        
+        # Send a GET request to OpenWeatherMap API
+        response = requests.get(url)
+        data = response.json()
+        
+        # Check if the response contains valid data
+        if data.get('cod') != 200:
+            return None  # If the city is not found or there's another issue
+        
+        # Extract relevant weather data
+        weather_description = data['weather'][0]['description']
+        temperature = data['main']['temp']
+        city_name = data['name']
+        
+        return (
+            f"The weather in {city_name} today is {weather_description} "
+            f"with a current temperature of {temperature}°C."
+        )
+    
     except Exception as e:
         print(f"Error fetching weather: {e}")
         return None
